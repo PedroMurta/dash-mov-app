@@ -4,22 +4,27 @@ import plotly.express as px
 import numpy as np
 import gdown
 import ssl
+import os
 
 ssl._create_default_https_context = ssl._create_unverified_context  #
 
-# 📌 1. Configuração inicial do Streamlit
-st.set_page_config(page_title="Movimentações", layout="wide", page_icon="📊")
+# 📌 Configuração inicial
+st.set_page_config(page_title="Mov", layout="wide", page_icon="🤖")
 
-# 📌 2. Função para carregar os dados do Google Drive
+# 📌 1. Função para baixar e carregar os dados do Google Drive
 @st.cache_data
 def load_data():
-    """Baixa o arquivo Parquet do Google Drive e carrega o dataframe."""
-    GDRIVE_URL = "https://drive.google.com/uc?id=1X1m2d9LwU6Y2Vsua_owp9m_YQnychSOj"  # 🔹 Substitua pelo seu link correto!
-    
-    output = "caged_20_24.parquet"
-    gdown.download(GDRIVE_URL, output, quiet=False)
+    GDRIVE_ID = "1X1m2d9LwU6Y2Vsua_owp9m_YQnychSOj"
+    GDRIVE_URL = f"https://drive.google.com/uc?id={GDRIVE_ID}"
+    FILE_PATH = "caged_20_24.parquet"
 
-    df = pd.read_parquet(output)
+    # Se o arquivo não existir localmente, faça o download
+    if not os.path.exists(FILE_PATH):
+        st.info("📥 Baixando arquivo de dados... Aguarde.")
+        gdown.download(GDRIVE_URL, FILE_PATH, quiet=False)
+
+    # Ler o arquivo Parquet
+    df = pd.read_parquet(FILE_PATH)
 
     # Criar colunas de Ano e Mês
     df["ano"] = df["competencia"].dt.year
