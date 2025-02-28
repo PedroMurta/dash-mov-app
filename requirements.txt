@@ -12,3 +12,4 @@ lightgbm==4.6.0  # Se estiver usando modelos LightGBM
 scipy==1.15.2  # Requerido por modelos estatísticos
 matplotlib==3.10.0  # Se quiser gráficos básicos além do Plotly
 seaborn==0.13.2  # Para visualizações estatísticas opcionais
+gdown==5.2.0
