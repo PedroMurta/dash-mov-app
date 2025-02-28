@@ -2,14 +2,24 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np
+import gdown
+import ssl
+
+ssl._create_default_https_context = ssl._create_unverified_context  #
 
 # 📌 1. Configuração inicial do Streamlit
-st.set_page_config(page_title="Mov", layout="wide", page_icon="🤖") 
+st.set_page_config(page_title="Movimentações", layout="wide", page_icon="📊")
 
-# 📌 2. Carregar os dados
+# 📌 2. Função para carregar os dados do Google Drive
 @st.cache_data
 def load_data():
-    df = pd.read_parquet("caged_20_24.parquet")
+    """Baixa o arquivo Parquet do Google Drive e carrega o dataframe."""
+    GDRIVE_URL = "https://drive.google.com/uc?id=1X1m2d9LwU6Y2Vsua_owp9m_YQnychSOj"  # 🔹 Substitua pelo seu link correto!
+    
+    output = "caged_20_24.parquet"
+    gdown.download(GDRIVE_URL, output, quiet=False)
+
+    df = pd.read_parquet(output)
 
     # Criar colunas de Ano e Mês
     df["ano"] = df["competencia"].dt.year
@@ -17,7 +27,10 @@ def load_data():
 
     return df
 
+# 📌 Carregar os dados
+st.sidebar.info("📥 Carregando dados...")
 df = load_data()
+st.sidebar.success("✅ Dados carregados com sucesso!")
 
 # 📌 3. Criar sidebar para filtros
 st.sidebar.title("🔎 Filtros")
@@ -71,50 +84,28 @@ aba1, aba2 = st.tabs(["📊 Saldo Final Acumulado", "📉 Saldo Final Mensal"])
 st.markdown(
     """
     <style>
-        /* Fundo geral */
         .stApp {
             background-color: #C9D6DF;
             font-family: 'Arial', sans-serif;
         }
-
-        /* Personalizar os cards */
-        .metric-container {
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .stMetric {
-            background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        /* Melhorando sidebar */
         [data-testid="stSidebar"] {
             background-color: #E6F0F8;
         }
-
-        /* Personalizar título */
         h1 {
             color: #2C3E50;
             text-align: center;
             font-size: 28px;
             font-weight: bold;
         }
-
-        /* Melhorando os botões */
         .stButton>button {
             background-color: #2C3E50;
             color: white;
             border-radius: 5px;
-            border: none;
             padding: 10px 20px;
         }
         .stButton>button:hover {
             background-color: #1A252F;
-        }       
+        }
     </style>
     """,
     unsafe_allow_html=True,
