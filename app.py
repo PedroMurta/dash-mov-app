@@ -11,20 +11,28 @@ ssl._create_default_https_context = ssl._create_unverified_context  #
 # 📌 Configuração inicial
 st.set_page_config(page_title="Mov", layout="wide", page_icon="🤖")
 
-# 📌 1. Função para baixar e carregar os dados do Google Drive
+# 📌 1. Definir URL do Google Drive
+GDRIVE_ID = "1X1m2d9LwU6Y2Vsua_owp9m_YQnychSOj"
+GDRIVE_URL = f"https://drive.google.com/uc?id={GDRIVE_ID}"
+FILE_PATH = "caged_20_24.parquet"
+
+# 📌 2. Baixar os dados do Google Drive (somente se necessário)
 @st.cache_data
 def load_data():
-    GDRIVE_ID = "1X1m2d9LwU6Y2Vsua_owp9m_YQnychSOj"
-    GDRIVE_URL = f"https://drive.google.com/uc?id={GDRIVE_ID}"
-    FILE_PATH = "caged_20_24.parquet"
-
-    # Se o arquivo não existir localmente, faça o download
     if not os.path.exists(FILE_PATH):
         st.info("📥 Baixando arquivo de dados... Aguarde.")
-        gdown.download(GDRIVE_URL, FILE_PATH, quiet=False)
+        try:
+            gdown.download(GDRIVE_URL, FILE_PATH, quiet=False)
+        except Exception as e:
+            st.error(f"❌ Erro ao baixar o arquivo: {e}")
+            return None
 
     # Ler o arquivo Parquet
-    df = pd.read_parquet(FILE_PATH)
+    try:
+        df = pd.read_parquet(FILE_PATH)
+    except Exception as e:
+        st.error(f"❌ Erro ao ler o arquivo: {e}")
+        return None
 
     # Criar colunas de Ano e Mês
     df["ano"] = df["competencia"].dt.year
@@ -32,11 +40,13 @@ def load_data():
 
     return df
 
-# 📌 Carregar os dados
-st.sidebar.info("📥 Carregando dados...")
+# 📌 3. Carregar os dados
 df = load_data()
-st.sidebar.success("✅ Dados carregados com sucesso!")
 
+if df is None:
+    st.stop()  # Interrompe a execução se os dados não foram carregados
+
+st.success("✅ Dados carregados com sucesso!")
 # 📌 3. Criar sidebar para filtros
 st.sidebar.title("🔎 Filtros")
 anos_disponiveis = sorted(df["ano"].unique(), reverse=True)
